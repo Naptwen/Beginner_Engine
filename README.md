@@ -1,5 +1,5 @@
 # Beginner_Engine
-\ㅜThis script is the sample of how to develop the engine for the beginner
+\nThis script is the sample of how to develop the engine for the beginner
 #Google, Youtube and Github are my teachers.
 #I am learnning coding by myself, 
 #So I focused on writing computer coding in a way that is as easy to understand as possible.
