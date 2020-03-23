@@ -1,0 +1,11 @@
+This code provide easy way to draw a bitmap (24bit and 32bit bmp file) on the window console.
+This file has the pure algorithm of how to draw a bitmap file on the conosole with pure c++.
+(only window.h used for SetPixel function to draw point on console)
+How to use.
+1. EBMP bmp; //Create EBMP class
+2. bmp.BITMAP(file direction); // using BITMAP function convert the BITMAP FILE
+3. Bitmap_reader(bmp, x, y); // using the rendering function drawing bmp file on console (x,y is based on the lower left  corner)
+
+Future work
+1. This version is using the SetPixel function of window API.
+I am trying to find alternative way to draw pixel on console.
