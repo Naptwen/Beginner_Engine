@@ -1,0 +1,25 @@
+#include "ECANVAS.h"
+#include "Window_rendering.h"
+
+int main() {
+	int w = 0, h = 0;               // This values are recived the size of CMD
+	WindowWH(&w, &h);               // This function gives the size of CMD
+	CANVAS canvas(w, h - 50);       // Creating Console window with w x h, in order to eliminate the obscured area I did h -50
+	EMATRIX A(3, 3);                // Careat Matrix with 3 by 3 size (It will be displayed on lower left corner on console)
+	int number[] = { RED, RED, RED ,RED,RED,RED, RED,RED,RED }; //3x3pixel redsquare; RED is define 0xFF000000
+	A = number;                      //Substitude the matrix 
+	canvas.PushMATRIX(&A);          //Drawing Matrix A on Canvas (it is virtually draw on canvas)
+	COLORCODE red(255,0,0);          //Example how to use the COLORCODE function (R,G,B)
+	canvas.PAINTLINE(0, 0, w, h, &red);             //drawing line on canvas directly w/o using other Matrix or BMP
+	canvas.c2bit24("./canvas.bmp");                  //Now extracting the canvas in 24bit bmp file (Because current it is the fastest way w/o using SetPixel
+	DrawBitBlt(0, 0, "./canvas.bmp");               //Drawing bmp file on console by using window API
+	_getch();                                        // Wait for push key
+  EBMP image("C:/brabra/brabra/brabra.bmp");       //Write the file location with the extension name
+                                                   //this version only you can use 24 and 32bit I recommand using the window paint application create 24bit bmp file
+                                                   //And RGB(255,0,255) Magenta color will be erased
+	canvas1PushEBMP(&image, 0, 0, 1);                 //Drawing bmp file on canvas on 0,0 position with size of 1 pixel (!Alert : it is not dpi)
+	canvas.c2bit24("./canvas.bmp");                   //Like above step, saving canvas into the bmp file, you can change the directory
+	canvas.c2txt("./canvas.txt");                     //It is just for saving in other format
+	DrawBitBlt(0, 0, "./canvas.bmp");                 //Drawing canvas on console
+	return 0;
+}
