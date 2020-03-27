@@ -1,0 +1,5 @@
+@Update
+1. Low level structure of Cuda algorithm
+2. Change the value of matrix from int to float
+3. !!New Matrix algorithm!! (Transition, gaussian jordan elimination algorithm)
+4. Basic Matrix function about Row operator and Matrix Setfunction (Zero matrix, Identity matrix)
