@@ -51,7 +51,7 @@ EMATRIX* EMATRIX::operator * (const  EMATRIX &B)
 			{
 				int index_A = k + x * this->n; //Axk
 				int index_B = y + k * B.n;     //Bky
-				int temp = this->vectors[index_A] * B.vectors[index_B];
+				float temp = this->vectors[index_A] * B.vectors[index_B];
 
 				sum += temp;
 			}
