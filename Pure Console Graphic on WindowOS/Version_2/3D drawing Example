@@ -1,0 +1,66 @@
+#pragma once
+#include <conio.h>
+#include <thread>
+#include "ECANVAS.h"
+#include "Window_rendering.h"
+//---------------------------
+static void setConsoleSize()
+{
+	HWND console = GetConsoleWindow();
+	RECT r;
+	system("Title : MARVEL SUPERHERO");
+	GetWindowRect(console, &r);
+	MoveWindow(console,50,50, 640, 480	, SWP_SHOWWINDOW | SWP_NOMOVE);
+	
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_SCREEN_BUFFER_INFO info;
+	GetConsoleScreenBufferInfo(handle, &info);
+	COORD new_size =
+	{
+		info.srWindow.Right - info.srWindow.Left + 1,
+		info.srWindow.Bottom - info.srWindow.Top + 1
+	};
+	SetConsoleScreenBufferSize(handle, new_size);
+
+	ReleaseDC(console, NULL);
+}
+
+
+int main() 
+{
+	setConsoleSize();
+	EMATRIX A(3, 3);
+	float Apos[] = 
+	{ 
+	1000,0,0,
+	0,1000,0,
+	0,0,1000,
+	};
+	A = Apos;
+	EMATRIX B(3, 2);
+	float Bpos[] =
+	{
+	-0.2500,0.7500,
+	0.7500,0.7500,
+	0.7500,-0.2500,
+	};
+	B = Bpos;
+	EMATRIX* t = A * B;
+
+	CANVAS canvas(640, 480 -50);
+	COLORCODE r(255, 0, 0);
+	COLORCODE g(0, 255, 0);
+	COLORCODE b(0, 0, 255);
+	COLORCODE w(255, 255, 255);
+	canvas.PAINTLINE(320, 100, 320 + t->vectors[4], 320 + t->vectors[5], &b);
+	canvas.PAINTLINE(320, 100, 320 + t->vectors[0], 320 + t->vectors[1], &r);
+	canvas.PAINTLINE(320, 100, 320 + t->vectors[2], 320 + t->vectors[3], &g);
+	canvas.DrawPixel(1, 100, 100, &w);
+
+	canvas.c2bit24("./TEST.bmp");
+	DrawBitBlt(0, 0, "./TEST.bmp");
+	_getch();
+	free(t);
+	return 0;
+}
+
