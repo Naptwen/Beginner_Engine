@@ -38,7 +38,7 @@ void EMATRIX::operator * (EMATRIX B)
 		{
 			x = i / cn; //Why it is different with the coordinate position of vecotr2D on screen?
 			y = i % cn; //the reason is that (1,0) on 2D is (0,0)(1,0) but in matrix (0,0) so placed in different position.
-			int sum = 0;//														     (1,0)
+			float sum = 0;//														     (1,0)
 			for (int k = 0; k < this->n; k++) // from 0 to n
 			{
 				int index_A = k + x * this->n; //Axk
