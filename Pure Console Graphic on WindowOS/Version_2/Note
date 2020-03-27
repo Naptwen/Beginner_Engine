@@ -3,3 +3,40 @@
 2. Change the value of matrix from int to float
 3. !!New Matrix algorithm!! (Transition, gaussian jordan elimination algorithm)
 4. Basic Matrix function about Row operator and Matrix Setfunction (Zero matrix, Identity matrix)
+
+How to use the Guassian jordan 
+Example
+int main()
+  EMATRIX A(4, 3); //Creating 4 by 3 matrix  
+	cout << "-------A-------" << endl;
+	float Apos[] = 
+	{ 
+	1, 1,1,
+	-1,1,1,
+	0, -1, 1,
+	1,0,1};
+	A = Apos; //substitude the float array in matrix
+	A.info(); // showing informatino of matrix
+  
+	cout << "-------B-------" << endl;
+	EMATRIX B(4, 1);
+	float Bpos[] =
+	{
+	4,
+	0,
+	1,
+	2
+	};
+	B = Bpos;
+	B.info();
+  
+	cout << "------Least Square form------" << endl;
+	EMATRIX* R = Least_Square_Solution(&A, &B); //Retrun pointer of matrix so don't forget free this matrix after using.
+  
+	cout << "------Projection------" << endl;
+	EMATRIX* P = A * (*R);
+	P->info();
+	
+  frree(R);
+  retrun 0;
+  }
