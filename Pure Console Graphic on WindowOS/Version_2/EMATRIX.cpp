@@ -1,6 +1,6 @@
 #pragma once
 #include "EMATRIX.h"
-
+#include <conio.h>
 EMATRIX::EMATRIX()
 {
 	this->m = 0;
@@ -167,7 +167,7 @@ void EMATRIX::COLUMCUT(int st, int ed)
 {
 	if (ed - st > 0 && ed < this->n && st >= 0)
 	{
-		float* press = (float*)malloc(sizeof(float) * (ed - st) * this->m);
+		float* press = (float*)malloc(sizeof(float) * (ed - st + 1) * this->m);
 		int k = 0;
 		for (int j = 0; j < this->m; j++)
 			for (int i = st; i <= ed; i++)
@@ -186,7 +186,7 @@ void EMATRIX::ROWCUT(int st, int ed)
 {
 	if (ed - st > 0 && ed < this->m && st >= 0)
 	{
-		float* press = (float*)malloc(sizeof(float) * (ed - st) * this->n);
+		float* press = (float*)malloc(sizeof(float) * (ed - st + 1) * this->n);
 		int k = 0;
 		for (int i = st; i <= ed; i++)
 			for (int j = 0; j < this->n; j++)
@@ -370,4 +370,5 @@ void Multi_Add_rows(EMATRIX* A, int r1, int r2, float num)
 //calculation
 int MAX(int A, int B) { if (A > B) return A; return B; }
 int MIN(int A, int B) { if (A > B) return B; return A; }
+
 
