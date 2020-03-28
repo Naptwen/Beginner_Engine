@@ -22,6 +22,7 @@ public:
 	 void EMATRIX::info();
 	 void EMATRIX::m2txt(std::string name);
 	 void EMATRIX::COLUMCUT(int st, int ed);
+	 void EMATRIX::ROWCUT(int st, int ed);
 	 void EMATRIX::ZEROS();
 	 void EMATRIX::ONES();
 	 void EMATRIX::IDENTITY();
