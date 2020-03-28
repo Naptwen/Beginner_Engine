@@ -36,6 +36,7 @@ void Sub_rows(EMATRIX* A, int r1, int r2);
 void Div_rows(EMATRIX* A, int r1, float num);
 void Multi_Add_rows(EMATRIX* A, int r1, int r2, float num);
 EMATRIX* Least_Square_Solution(EMATRIX* A, EMATRIX* B);
-EMATRIX* MATRIXCOMBINE(EMATRIX* A, EMATRIX* B);
+EMATRIX* MATRIXADDROW(EMATRIX* A, EMATRIX* B);
+EMATRIX* MATRIXADDCOL(EMATRIX* A, EMATRIX* B);
 EMATRIX* Guassain_elimination(EMATRIX* A, int limit); 
 EMATRIX* PROJECTION(EMATRIX* A, EMATRIX* B);
