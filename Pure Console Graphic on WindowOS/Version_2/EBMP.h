@@ -1,56 +1,41 @@
 #pragma once
 #include <string>
-#include <iostream>
+#include <stdio.h>
 #include <fstream>
-using namespace std;
+#include <iostream>
 
-//Reference the wikipidea Bitmap information
-#pragma pack(2) //for making byte 2
-typedef struct {
-	unsigned short bhmagic = 0;
-	unsigned int   bhsize = 0;
-	unsigned short bhrev1 = 0;
-	unsigned short bhrev2 = 0;
-	unsigned int   bhoffset = 0;
-} BMPHEADER;
-#pragma pack()
-typedef struct {
-	unsigned int   biSize = 0;
-	unsigned int   biWidth = 0;
-	unsigned int   biHeight = 0;
-	unsigned short biPlanes = 0;
-	unsigned short biBitCount = 0;
-	unsigned int   biCompression = 0;
-	unsigned int   biSizeImage = 0;
-	unsigned int   biXPelsPerMeter = 0;
-	unsigned int   biYPelsPerMeter = 0;
-	unsigned int   biClrUsed = 0;
-	unsigned int   biClrImportant = 0;
-} BMPINFO;
-//the x y position is based on lower left corner of bmp
-typedef struct {
-	unsigned char r = 0;
-	unsigned char g = 0;
-	unsigned char b = 0;
-	unsigned char rev = 0;
-	int x = 0;
-	int y = 0;
-}BMPRGB;
-class EBMP {
+using namespace std;
+class EMATRIX{
 public:
-	BMPHEADER bh;
-	BMPINFO bi;
-	BMPRGB* brgb;
-	string file_name;
-	int Gap;
-	int size;
-	void EBMP::INFORMATION();
-	void EBMP::ROTATION(int degree);
-	void EBMP::CUT(int x, int y, int w, int h);
-	void EBMP::RESET();
-	EBMP::EBMP(string file_name);
-	EBMP::EBMP();
-	EBMP::~EBMP();
-private:
-	void EBMP::LOADBMP();
+	float* vectors;
+	int m; //row
+	int n; //column
+	EMATRIX::EMATRIX();
+	 EMATRIX::EMATRIX(int m, int n);
+	 EMATRIX::~EMATRIX();
+	 void EMATRIX::operator = (const float* matrix);
+	 void EMATRIX::operator = (const EMATRIX &matrix);
+	 EMATRIX* EMATRIX:: operator * (const EMATRIX &B);
+	 EMATRIX* EMATRIX:: operator * (const float f);
+	 EMATRIX* EMATRIX::operator + (const  float f);
+	 EMATRIX* EMATRIX::T();
+	 void EMATRIX::info();
+	 void EMATRIX::m2txt(std::string name);
+	 void EMATRIX::COLUMCUT(int st, int ed);
+	 void EMATRIX::ROWCUT(int st, int ed);
+	 void EMATRIX::ZEROS();
+	 void EMATRIX::ONES();
+	 void EMATRIX::IDENTITY();
 };
+int MAX(int A, int B);
+int MIN(int A, int B);
+void swap_rows(EMATRIX* A, int r1, int r2);
+void Multi_rows(EMATRIX* A, int r1, float num);
+void Add_rows(EMATRIX* A, int r1, int r2);
+void Sub_rows(EMATRIX* A, int r1, int r2);
+void Div_rows(EMATRIX* A, int r1, float num);
+void Multi_Add_rows(EMATRIX* A, int r1, int r2, float num);
+EMATRIX* Least_Square_Solution(EMATRIX* A, EMATRIX* B);
+EMATRIX* MATRIXCOMBINE(EMATRIX* A, EMATRIX* B);
+EMATRIX* Guassain_elimination(EMATRIX* A, int limit); 
+EMATRIX* PROJECTION(EMATRIX* A, EMATRIX* B);
