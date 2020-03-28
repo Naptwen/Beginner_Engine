@@ -229,7 +229,7 @@ EMATRIX* Least_Square_Solution(EMATRIX* A, EMATRIX* B)
 	EMATRIX* AT = A->T();
 	EMATRIX* ATA = (*AT) * (*A);
 	EMATRIX* ATB = (*AT) * (*B);
-	EMATRIX* AB = MATRIXCOMBINE(ATA, ATB);
+	EMATRIX* AB = MATRIXADDCOL(ATA, ATB);
 	EMATRIX* G = Guassain_elimination(AB, AB->n - ATB->n);
 	G->COLUMCUT(AB->n -ATB->n , AB->n - 1);
 	free(AT);
@@ -238,18 +238,18 @@ EMATRIX* Least_Square_Solution(EMATRIX* A, EMATRIX* B)
 	free(AB);
 	return G;
 }
-EMATRIX* MATRIXCOMBINE(EMATRIX* A, EMATRIX* B)
+EMATRIX* MATRIXADDROW(EMATRIX* A, EMATRIX* B)
 {
-	if (A->m != B->m)
+	if (A->n != B->n)
 	{
-		cout << "ERROR! A->m and B->m is not equal" << endl;
+		cout << "ERROR! A->n and B->n is not equal" << endl;
 		return nullptr;
 	}
 	else
 	{
 		int size_AlB = ((A->m) * (A->n) + (B->m) * (B->n));
-		int AlB_m = A->m;
-		int AlB_n = A->n + B->n;
+		int AlB_m = A->m + B->n;
+		int AlB_n = A->n;
 		EMATRIX* AlB = (EMATRIX*)malloc(sizeof(EMATRIX));
 		AlB->m = AlB_m;
 		AlB->n = AlB_n;
@@ -258,15 +258,46 @@ EMATRIX* MATRIXCOMBINE(EMATRIX* A, EMATRIX* B)
 		{
 			int m = i / AlB_n;
 			int n = i % AlB_n;
-			if (n < A->n)
+			if (m < A->m)
 				AlB->vectors[i] = A->vectors[n + m * A->n];
 			else
 			{
-				int Bn = n - A->n;
-				AlB->vectors[i] = B->vectors[Bn + m * B->n];
+				int Bn = m - A->n;
+				AlB->vectors[i] = B->vectors[n + Bn * B->n];
 			}
 		}
 		return AlB;
+	}
+}
+EMATRIX* MATRIXADDCOL(EMATRIX* A, EMATRIX* B)
+{
+	if (A->m != B->m)
+	{
+		cout << "ERROR! A->m and B->m is not equal" << endl;
+		return nullptr;
+	}
+	else
+	{
+		int size_A_B = ((A->m) * (A->n) + (B->m) * (B->n));
+		int A_B_m = A->m;
+		int A_B_n = A->n + B->n;
+		EMATRIX* A_B = (EMATRIX*)malloc(sizeof(EMATRIX));
+		A_B->m = A_B_m;
+		A_B->n = A_B_n;
+		A_B->vectors = (float*)malloc(sizeof(float) * size_A_B);
+		for (int i = 0; i < size_A_B; i++)
+		{
+			int m = i / A_B_n;
+			int n = i % A_B_n;
+			if (n < A->n)
+				A_B->vectors[i] = A->vectors[n + m * A->n];
+			else
+			{
+				int Bn = n - A->n;
+				A_B->vectors[i] = B->vectors[Bn + m * B->n];
+			}
+		}
+		return A_B;
 	}
 }
 EMATRIX* Guassain_elimination(EMATRIX* A, int limit) {
@@ -310,7 +341,7 @@ EMATRIX* PROJECTION(EMATRIX* A, EMATRIX* B)
 	EMATRIX* AT = A->T();
 	EMATRIX* ATA = (*AT) * (*A);
 	EMATRIX* ATB = (*AT) * (*B);
-	EMATRIX* AB = MATRIXCOMBINE(ATA, ATB);
+	EMATRIX* AB = MATRIXADDCOL(ATA, ATB);
 	EMATRIX* G = Guassain_elimination(AB, AB->n - ATB->n);
 	G->COLUMCUT(AB->n - ATB->n, AB->n - 1);
 	EMATRIX* P = (*A) * (*G);
