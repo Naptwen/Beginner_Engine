@@ -165,19 +165,38 @@ void EMATRIX::m2txt(string name)
 }
 void EMATRIX::COLUMCUT(int st, int ed)
 {
-	if (ed - st > 0 && ed <= this->n && st >= 0)
+	if (ed - st > 0 && ed < this->n && st >= 0)
 	{
 		float* press = (float*)malloc(sizeof(float) * (ed - st) * this->m);
 		int k = 0;
 		for (int j = 0; j < this->m; j++)
-			for (int i = st; i < ed; i++)
+			for (int i = st; i <= ed; i++)
 			{
 				memmove(&press[k], &this->vectors[i + j * this->n], sizeof(float));
 				k++;
 			}
 		free(this->vectors);
 		this->vectors = press;
-		this->n = ed - st;
+		this->n = ed - st + 1;
+	}
+	else
+		cout << "ERROR:: size is not defined" << endl;
+}
+void EMATRIX::ROWCUT(int st, int ed)
+{
+	if (ed - st > 0 && ed < this->m && st >= 0)
+	{
+		float* press = (float*)malloc(sizeof(float) * (ed - st) * this->n);
+		int k = 0;
+		for (int i = st; i <= ed; i++)
+			for (int j = 0; j < this->n; j++)
+			{
+				memmove(&press[k], &this->vectors[j + i * this->n], sizeof(float));
+				k++;
+			}
+		free(this->vectors);
+		this->vectors = press;
+		this->m = ed - st + 1;
 	}
 	else
 		cout << "ERROR:: size is not defined" << endl;
@@ -212,7 +231,7 @@ EMATRIX* Least_Square_Solution(EMATRIX* A, EMATRIX* B)
 	EMATRIX* ATB = (*AT) * (*B);
 	EMATRIX* AB = MATRIXCOMBINE(ATA, ATB);
 	EMATRIX* G = Guassain_elimination(AB, AB->n - ATB->n);
-	G->COLUMCUT(AB->n -ATB->n , AB->n);
+	G->COLUMCUT(AB->n -ATB->n , AB->n - 1);
 	free(AT);
 	free(ATA);
 	free(ATB);
@@ -293,7 +312,7 @@ EMATRIX* PROJECTION(EMATRIX* A, EMATRIX* B)
 	EMATRIX* ATB = (*AT) * (*B);
 	EMATRIX* AB = MATRIXCOMBINE(ATA, ATB);
 	EMATRIX* G = Guassain_elimination(AB, AB->n - ATB->n);
-	G->COLUMCUT(AB->n - ATB->n, AB->n);
+	G->COLUMCUT(AB->n - ATB->n, AB->n - 1);
 	EMATRIX* P = (*A) * (*G);
 	free(AT);
 	free(ATA);
@@ -351,3 +370,4 @@ void Multi_Add_rows(EMATRIX* A, int r1, int r2, float num)
 //calculation
 int MAX(int A, int B) { if (A > B) return A; return B; }
 int MIN(int A, int B) { if (A > B) return B; return A; }
+
