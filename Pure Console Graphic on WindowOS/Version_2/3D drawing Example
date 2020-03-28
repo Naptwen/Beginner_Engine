@@ -2,6 +2,7 @@
 #include <conio.h>
 #include <thread>
 #include "ECANVAS.h"
+
 #include "Window_rendering.h"
 //---------------------------
 static void setConsoleSize()
@@ -29,38 +30,45 @@ static void setConsoleSize()
 int main() 
 {
 	setConsoleSize();
-	EMATRIX A(3, 3);
-	float Apos[] = 
-	{ 
-	1000,0,0,
-	0,1000,0,
-	0,0,1000,
-	};
-	A = Apos;
-	EMATRIX B(3, 2);
-	float Bpos[] =
-	{
-	-0.2500,0.7500,
-	0.7500,0.7500,
-	0.7500,-0.2500,
-	};
-	B = Bpos;
-	EMATRIX* t = A * B;
 
+	EMATRIX C(4, 3);
+	float c[] = 
+	{
+		0,0,0,
+		1,0,0,
+		0,1,0,
+		0,0,1
+	};
+	C = c;
+
+	EMATRIX D(4, 2);
+	float d[] =
+	{
+		0,0,
+		-cos(45),-cos(45),
+		cos(45),-cos(45),
+		0,1
+	};
+	D = d;
+	EMATRIX* E = PROJECTION(&C, &D);
+	EMATRIX* F = (*E) * 1000;
+	EMATRIX* G = (*F) + 240;
+	EMATRIX* H = C * D;
+	G->info();
 	CANVAS canvas(640, 480 -50);
 	COLORCODE r(255, 0, 0);
 	COLORCODE g(0, 255, 0);
 	COLORCODE b(0, 0, 255);
 	COLORCODE w(255, 255, 255);
-	canvas.PAINTLINE(320, 100, 320 + t->vectors[4], 320 + t->vectors[5], &b);
-	canvas.PAINTLINE(320, 100, 320 + t->vectors[0], 320 + t->vectors[1], &r);
-	canvas.PAINTLINE(320, 100, 320 + t->vectors[2], 320 + t->vectors[3], &g);
-	canvas.DrawPixel(1, 100, 100, &w);
-
+	canvas.PAINTLINE(G->vectors[0], G->vectors[1], G->vectors[2], G->vectors[3], &r);
+	canvas.PAINTLINE(G->vectors[0], G->vectors[1], G->vectors[4], G->vectors[5], &g);
+	canvas.PAINTLINE(G->vectors[0], G->vectors[1], G->vectors[6], G->vectors[7], &b);
+	canvas.DrawPixel(1, G->vectors[0], G->vectors[1], &w);
 	canvas.c2bit24("./TEST.bmp");
 	DrawBitBlt(0, 0, "./TEST.bmp");
 	_getch();
-	free(t);
+	free(E);
+	free(F);
+	free(G);
 	return 0;
 }
-
