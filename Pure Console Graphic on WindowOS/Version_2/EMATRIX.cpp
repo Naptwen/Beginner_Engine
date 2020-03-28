@@ -1,5 +1,6 @@
 #pragma once
 #include "EMATRIX.h"
+
 EMATRIX::EMATRIX()
 {
 	this->m = 0;
@@ -46,7 +47,7 @@ EMATRIX* EMATRIX::operator * (const  EMATRIX &B)
 		{
 			x = i / Cn; //Why it is different with the coordinate position of vecotr2D on screen?
 			y = i % Cn; //the reason is that (1,0) on 2D is (0,0)(1,0) but in matrix (0,0) so placed in different position.
-			int sum = 0;//														     (1,0)
+			float sum = 0;//														     (1,0)
 			for (int k = 0; k < this->n; k++) // from 0 to n
 			{
 				int index_A = k + x * this->n; //Axk
@@ -67,6 +68,30 @@ EMATRIX* EMATRIX::operator * (const  EMATRIX &B)
 		cout << "ERROR : MATRIX SIZE IS NOT SAME" << endl;
 		return nullptr;
 	}
+}
+EMATRIX* EMATRIX::operator * (const  float f)
+{
+	EMATRIX* C = (EMATRIX*)malloc(sizeof(EMATRIX));
+	C->vectors = (float*)malloc(this->m * this->n * sizeof(float));
+	memmove(C->vectors, this->vectors, this->m * this->n * sizeof(float));
+	int length = this->m * this->n;
+	for (int k = 0; k < length; k++)// from 0 to n
+		C->vectors[k] = C->vectors[k] * f;
+	C->m = this->m;
+	C->n = this->n;
+	return C;
+}
+EMATRIX* EMATRIX::operator + (const  float f)
+{
+	EMATRIX* C = (EMATRIX*)malloc(sizeof(EMATRIX));
+	C->vectors = (float*)malloc(this->m * this->n * sizeof(float));
+	memmove(C->vectors, this->vectors, this->m * this->n * sizeof(float));
+	int length = this->m * this->n;
+	for (int k = 0; k < length; k++)
+		C->vectors[k] = C->vectors[k] + f;
+	C->m = this->m;
+	C->n = this->n;
+	return C;
 }
 EMATRIX* EMATRIX::T()
 {
@@ -105,7 +130,7 @@ void EMATRIX::info()
 	int y = 1;
 	for (int i = 0; i < length; i++)
 	{
-		printf("%.2f ", this->vectors[i]);
+		printf("%.4f,", this->vectors[i]);
 		//cout << (float) this->vectors[i] << ", ";
 		if (y == this->n)
 		{
@@ -138,10 +163,30 @@ void EMATRIX::m2txt(string name)
 	}
 	out.close();
 }
+void EMATRIX::COLUMCUT(int st, int ed)
+{
+	if (ed - st > 0 && ed <= this->n && st >= 0)
+	{
+		float* press = (float*)malloc(sizeof(float) * (ed - st) * this->m);
+		int k = 0;
+		for (int j = 0; j < this->m; j++)
+			for (int i = st; i < ed; i++)
+			{
+				memmove(&press[k], &this->vectors[i + j * this->n], sizeof(float));
+				k++;
+			}
+		free(this->vectors);
+		this->vectors = press;
+		this->n = ed - st;
+	}
+	else
+		cout << "ERROR:: size is not defined" << endl;
+}
 void EMATRIX::ZEROS() 
 {
 	std::free(this->vectors);
-	int size = this->m * this->n;
+	int size = 0; 
+	size = this->m* this->n;
 	this->vectors = (float*)calloc(size, sizeof(float));
 }
 void EMATRIX::IDENTITY()
@@ -151,26 +196,14 @@ void EMATRIX::IDENTITY()
 	for (int i = 0; i < k; i++)
 		this->vectors[i + i * this->n] = 1;
 }
-void EMATRIX::COLUMCUT(int st, int ed)
+void EMATRIX::ONES() 
 {
-	if (ed - st > 0 && ed <= this->n && st>=0) 
+	int size = this->m * this->n;
+	for (int i = 0; i < size; i++)
 	{
-		float* press = (float*)malloc(sizeof(float) * (ed - st)* this->m);
-		int k = 0;
-		for (int j = 0; j < this->m; j++)
-			for (int i = st; i < ed; i++)
-			{
-				memmove(&press[k],&this->vectors[i + j * this->n],sizeof(float));
-				k++;
-			}
-		free(this-> vectors);
-		this->vectors = press;
-		this->n = ed - st;
+		this->vectors[i] = 1;
 	}
-	else
-		cout << "ERROR:: size is not defined" << endl;
 }
-
 EMATRIX* Least_Square_Solution(EMATRIX* A, EMATRIX* B)
 //A(m,n) and B(n,p) must be required
 {
@@ -180,10 +213,10 @@ EMATRIX* Least_Square_Solution(EMATRIX* A, EMATRIX* B)
 	EMATRIX* AB = MATRIXCOMBINE(ATA, ATB);
 	EMATRIX* G = Guassain_elimination(AB, AB->n - ATB->n);
 	G->COLUMCUT(AB->n -ATB->n , AB->n);
-	G->info();
 	free(AT);
 	free(ATA);
 	free(ATB);
+	free(AB);
 	return G;
 }
 EMATRIX* MATRIXCOMBINE(EMATRIX* A, EMATRIX* B)
@@ -253,6 +286,22 @@ EMATRIX* Guassain_elimination(EMATRIX* A, int limit) {
 	}
 	return G;
 }
+EMATRIX* PROJECTION(EMATRIX* A, EMATRIX* B)
+{
+	EMATRIX* AT = A->T();
+	EMATRIX* ATA = (*AT) * (*A);
+	EMATRIX* ATB = (*AT) * (*B);
+	EMATRIX* AB = MATRIXCOMBINE(ATA, ATB);
+	EMATRIX* G = Guassain_elimination(AB, AB->n - ATB->n);
+	G->COLUMCUT(AB->n - ATB->n, AB->n);
+	EMATRIX* P = (*A) * (*G);
+	free(AT);
+	free(ATA);
+	free(ATB);
+	free(AB);
+	free(G);
+	return P;
+}
 //Row Operator
 void swap_rows(EMATRIX* A, int r1, int r2)
 {
@@ -268,7 +317,7 @@ void Add_rows(EMATRIX* A, int r1, int r2)
 {
 	for (int k = 0; k < A->n; k++)
 	{
-		A->vectors[k + r1 * A->n] = A->vectors[k + r1 * A->n] - A->vectors[k + r2 * A->n];
+		A->vectors[k + r1 * A->n] = A->vectors[k + r1 * A->n] + A->vectors[k + r2 * A->n];
 	}
 }
 void Sub_rows(EMATRIX* A, int r1, int r2)//subtract R1- R2
@@ -278,11 +327,11 @@ void Sub_rows(EMATRIX* A, int r1, int r2)//subtract R1- R2
 		A->vectors[k + r1 * A->n] =A->vectors[k + r1 * A->n] - A->vectors[k + r2 * A->n];
 	}
 }
-void Multi_rows(EMATRIX* A, int r1, float num)
+void Multi_rows(EMATRIX* A, int r1, int r2)
 {
 	for (int k = 0; k < A->n; k++)
 	{
-		A->vectors[k + r1 * A->n] = num * A->vectors[k + r1 * A->n];
+		A->vectors[k + r1 * A->n] = A->vectors[k + r2 * A->n] * A->vectors[k + r1 * A->n];
 	}
 }
 void Div_rows(EMATRIX* A, int r1, float num)
