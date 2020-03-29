@@ -1,0 +1,66 @@
+Update
+1.Error in free value in EMATRIX.
+2.Camera function.
+3.updaate log file (it is declared as elog if you don't want, pls delete elog in each cpp file)
+
+---------------------Example Code-------------------------------------
+              It shows rotating green cube
+#pragma once
+//---------------------------
+#include "EOPEN.h"
+#include <conio.h>
+//---------------------------
+
+void CUBETEST(CANVAS *canvas) 
+{
+	EMATRIX A(24, 3);
+	float test[] =
+	{
+		0,0,0,	 0,0,50,
+		0,0,0,	 50,0,0,
+		50,0,0,	 50,0,50,
+		0,0,50,	 50,0,50,
+
+		50,0,0,	 50,50,0,
+		0,0,0,	 0,50,0,
+		0,0,50,	 0,50,50,
+		50,0,50, 50,50,50,
+
+		0,50,50, 50,50,50,
+		0,50,50, 0,50,0,
+		50,50,0, 0,50,0,
+		50,50,0, 50,50,50
+	};
+	A = test;
+	float j = 0;
+
+	while (j < 1440)
+	{
+		EMATRIX* C;
+		EMATRIX* K;
+		C = SETCAMERA(1,1, 0, 1, 0, j, 0, 200,50,50);
+		K = CAMERA_MATRIX(*C, A);
+		COLORCODE g(0, 255, 0);
+		OPENCL_MATRIX(canvas, *K, g, LINE);
+		GRAPHICDISPLAYER(*canvas);
+		Sleep(1);
+		GRAPHICDISCLEAR(*canvas);
+		j+= 0.1;
+		if (j == 1440)
+			j = 0;
+		free(K);
+		free(C);
+	}
+
+}
+
+int main() 
+{
+	CANVAS* canvas= OPENCLSET("USG OPENCL", 400, 400, -1, -1, WINDOW, BORDERLESS);
+	elog << "PROGRAM START\n";
+	_logtxt.Clearlog();
+	std::thread T (CUBETEST, canvas);
+
+	T.join();
+	return 0;
+}
