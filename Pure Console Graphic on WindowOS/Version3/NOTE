@@ -1,7 +1,8 @@
 Update
-1.Error in free value in EMATRIX.
+1.Fix Error in free value in EMATRIX.
 2.Camera function.
 3.updaate log file (it is declared as elog if you don't want, pls delete elog in each cpp file)
+4.Change the algorithm of drawing Line on ECanvas
 
 ---------------------Example Code-------------------------------------
               It shows rotating green cube
