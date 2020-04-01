@@ -7,12 +7,14 @@
 #define ADD_COL 201
 #define ADD_ROW 202
 #define TRANS 205
+#define CUT_COL 211
+#define CUT_ROW 218
 //A front matrix B is back matrix
 //m -> C's m
 //p -> A's n
 //n -> C's n
 __global__
-void CUDA_MATRIX_MULTI(int m, int p, int n, float* A, float* B, float* C)
+void CUDA_MATRIX_MULTI(int m, int p, int n, int trash, float* A, float* B, float* C)
 {
 	int k = threadIdx.x + blockIdx.x * blockDim.x; //index of C
 
@@ -29,7 +31,7 @@ void CUDA_MATRIX_MULTI(int m, int p, int n, float* A, float* B, float* C)
 //nC -> C's n or B's m
 //nA -> A's n
 __global__ 
-void CUDA_MATRIX_ADD_COLUMN(int m, int nC, int nA,  float* A, float* B, float* C)
+void CUDA_MATRIX_ADD_COLUMN(int m, int nC, int nA, int trash, float* A, float* B, float* C)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	int mnC = m * nC;
@@ -49,7 +51,7 @@ void CUDA_MATRIX_ADD_COLUMN(int m, int nC, int nA,  float* A, float* B, float* C
 //nC -> C'n or A'n or B'n
 //mA -> A's m
 __global__
-void CUDA_MATRIX_ADD_ROW(int mC, int nC, int mA, float* A, float* B, float* C)
+void CUDA_MATRIX_ADD_ROW(int mC, int nC, int mA, int trash, float* A, float* B, float* C)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	int mnC = mC * nC;
@@ -69,7 +71,7 @@ void CUDA_MATRIX_ADD_ROW(int mC, int nC, int mA, float* A, float* B, float* C)
 //ADD_COL : A + B horizontally add extra rows
 //TRANS : A^T , B is NULL, 
 __global__
-void CUDA_MATRIX_TRANS(int mC, int nC, int  mnC, float* A, float* B, float* C)
+void CUDA_MATRIX_TRANS(int mC, int nC, int  mnC, int trash, float* A,  float* trash2, float* C)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	if (i < mnC)
@@ -79,8 +81,43 @@ void CUDA_MATRIX_TRANS(int mC, int nC, int  mnC, float* A, float* B, float* C)
 		C[y + x * nC] = A[x + y * mC];
 	}
 }
-
-EMATRIX* CUDA_MATRIX_CONVERT(EMATRIX* A, EMATRIX* B, const unsigned char FUN)
+//nA is # column in A 
+//start column number remember 0 is 1, 1 is 2
+//END column number remember 0 is 1, 1 is 2
+//B is NULL
+__global__
+void CUDA_MATRIX_CUT_COL(int mA, int nA, int start, int end, float* A, float* trahs, float* C)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int num = mA * nA;
+	if (i < num)
+	{
+		int x = i / nA;
+		int y = i % nA;
+		if(y >= start && y <= end)
+			C[y - start + x * (end - start + 1)] = A[i];
+	}
+}
+//nA is # row in A 
+//start row number remember 0 is 1, 1 is 2
+//END row number remember 0 is 1, 1 is 2
+//B is NULL
+__global__
+void CUDA_MATRIX_CUT_ROW(int mA, int nA, int start, int end, float* A, float* trash, float* C)
+{
+	int i = threadIdx.x + blockIdx.x * blockDim.x;
+	int num = mA * nA;
+	if (i < num)
+	{
+		int x = i / nA;
+		int y = i % nA;
+		if (x >= start && x <= end)
+			C[y  + (x - start) * nA] = A[i];
+	}
+}
+//start and end are only used for the MATRIX CUT 
+//So in the other case let it as zero or null
+EMATRIX* CUDA_MATRIX_CONVERT(EMATRIX* A, EMATRIX* B, int start, int end, const unsigned char FUN)
 {
 	float* CUDA_A = NULL;
 	float* CUDA_B = NULL;
@@ -102,14 +139,14 @@ EMATRIX* CUDA_MATRIX_CONVERT(EMATRIX* A, EMATRIX* B, const unsigned char FUN)
 
 	}
 	EMATRIX* C = (EMATRIX*)malloc(sizeof(EMATRIX));
-	void (*temp)(int, int, int, float*, float*, float*);
-	long int bx, by, bz;
+	void (*temp)(int, int, int, int, float*, float*, float*);
+	long int bx =0, by =0, bz =0, bi =0;
 	switch (FUN)
 	{
 	case MULTI:
 		if (A->n != B->m)
 		{
-			elog << "[ERROR] MULTI MATRIX:" + to_string(A->n) + to_string(B->m) + "is not equal";
+			elog << "[ERROR] MULTI MATRIX:" + to_string(A->n) + to_string(B->m) + "is not equal\n";
 			return nullptr;
 		}
 		temp = CUDA_MATRIX_MULTI;
@@ -123,7 +160,7 @@ EMATRIX* CUDA_MATRIX_CONVERT(EMATRIX* A, EMATRIX* B, const unsigned char FUN)
 	case ADD_COL:
 		if (A->m != B->m)
 		{
-				elog << "[ERROR] ADD COLUMN:" + to_string(A->m) + to_string(B->m) + "is not equal";
+			elog << "[ERROR] ADD COLUMN:" + to_string(A->m) + " : " + to_string(B->m) + "is not equal\n";
 			return nullptr;
 		}
 		temp = CUDA_MATRIX_ADD_COLUMN;
@@ -137,7 +174,7 @@ EMATRIX* CUDA_MATRIX_CONVERT(EMATRIX* A, EMATRIX* B, const unsigned char FUN)
 	case ADD_ROW:
 		if (A->n != B->n)
 		{
-			elog << "[ERROR] ADD ROW:" + to_string(A->n) + to_string(B->n) + "is not equal";
+			elog << "[ERROR] ADD ROW:" + to_string(A->n) +" : " + to_string(B->n) + "is not equal\n";
 			return nullptr;
 		}
 		temp = CUDA_MATRIX_ADD_ROW;
@@ -157,11 +194,42 @@ EMATRIX* CUDA_MATRIX_CONVERT(EMATRIX* A, EMATRIX* B, const unsigned char FUN)
 		by = C->n;
 		bz = C->m * C->n;
 		break;
+	case CUT_COL:
+		if (start <0 && end > A->n)
+		{
+			elog << "[ERROR] CUT COL:" + to_string(start) + " : " + to_string(end) + "is out of range\n";
+			return nullptr;
+		}
+		temp = CUDA_MATRIX_CUT_COL;
+		size_C = A->m * (end - start + 1);
+		C->m = A->m;
+		C->n = (end - start + 1);
+		bx = A->m;
+		by = A->n;
+		bz = start;
+		bi = end;
+		break;
+	case CUT_ROW:
+		if (start <0 && end > A->m)
+		{
+			elog << "[ERROR] CUT ROW:" + to_string(start) + " : " + to_string(end) + "is out of range\n";
+			return nullptr;
+		}
+		temp = CUDA_MATRIX_CUT_ROW;
+		size_C = A->n * (end - start + 1);
+		C->m = (end - start + 1);
+		C->n = A->n;
+		bx = A->m;
+		by = A->n;
+		bz = start;
+		bi = end;
+		break;
 	}
 	cudaMalloc(&CUDA_C, sizeof(float) * size_C);
 	dim3 blockPerGrid(512, 1, 1);
 	dim3 threadsPerBlock(512,1,1);
-	temp << <blockPerGrid, threadsPerBlock >> > (bx,by,bz,CUDA_A,CUDA_B,CUDA_C);
+
+	temp << <blockPerGrid, threadsPerBlock >> > (bx,by,bz,bi,CUDA_A,CUDA_B,CUDA_C);
 
 	C->vectors = (float*)malloc(sizeof(float) * size_C);
 	cudaMemcpy(C->vectors, CUDA_C, sizeof(float) * size_C, cudaMemcpyDeviceToHost);
