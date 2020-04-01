@@ -26,10 +26,10 @@ void CUDA_MATRIX_MULTI(int m, int p, int n, float* A, float* B, float* C)
 }
 //A front matrix B is back matrix
 //m -> A's m or B's m
-//nA -> A's n 
-//nC -> C's n
+//nC -> C's n or B's m
+//nA -> A's n
 __global__ 
-void CUDA_MATRIX_ADD_COLUMN(int m, int nA, int nC,  float* A, float* B, float* C)
+void CUDA_MATRIX_ADD_COLUMN(int m, int nC, int nA,  float* A, float* B, float* C)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	int mnC = m * nC;
@@ -45,11 +45,11 @@ void CUDA_MATRIX_ADD_COLUMN(int m, int nA, int nC,  float* A, float* B, float* C
 	}
 }
 //A front matrix B is back matrix
-//nC -> C'n or A'n or B'n
-//mA -> A's m 
 //mC -> C's m
+//nC -> C'n or A'n or B'n
+//mA -> A's m
 __global__
-void CUDA_MATRIX_ADD_ROW(int mC, int mA, int nC, float* A, float* B, float* C)
+void CUDA_MATRIX_ADD_ROW(int mC, int nC, int mA, float* A, float* B, float* C)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	int mnC = mC * nC;
@@ -64,16 +64,14 @@ void CUDA_MATRIX_ADD_ROW(int mC, int mA, int nC, float* A, float* B, float* C)
 			C[y + x * nC] = B[y + (x-mA) * nC];
 	}
 }
-//A front matrix B is back matrix
-//nC -> C'n or A'n or B'n
-//mA -> A's m 
-//mC -> C's m
+//MULTI : A*B
+//ADD_ROW : A + B vertically add extra column
+//ADD_COL : A + B horizontally add extra rows
+//TRANS : A^T , B is NULL, 
 __global__
-void CUDA_MATRIX_TRANS(int mC, int nC, int k, float* A, float* B, float* C)
+void CUDA_MATRIX_TRANS(int mC, int nC, int  mnC, float* A, float* B, float* C)
 {
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
-	int mnC = mC * nC;
-
 	if (i < mnC)
 	{
 		int x = i / nC;
@@ -82,10 +80,7 @@ void CUDA_MATRIX_TRANS(int mC, int nC, int k, float* A, float* B, float* C)
 		printf("[%d,%d] <-> [%d,%d]\n", x, y, y, x);
 	}
 }
-//MULTI : A*B
-//ADD_ROW : A + B vertically add extra column
-//ADD_COL : A + B horizontally add extra rows
-//TRANS : A^T , B is NULL, 
+
 EMATRIX* CUDA_MATRIX_CONVERT(EMATRIX* A, EMATRIX* B, const unsigned char FUN)
 {
 	float* CUDA_A = NULL;
@@ -137,8 +132,8 @@ EMATRIX* CUDA_MATRIX_CONVERT(EMATRIX* A, EMATRIX* B, const unsigned char FUN)
 		C->m = A->m ;
 		C->n = A->n + B->n;
 		bx = C->m;
-		by = A->n;
-		bz = C->n;
+		by = C->n;
+		bz = A->n;
 		break;
 	case ADD_ROW:
 		if (A->n != B->n)
@@ -151,8 +146,8 @@ EMATRIX* CUDA_MATRIX_CONVERT(EMATRIX* A, EMATRIX* B, const unsigned char FUN)
 		C->m = A->m + B->m;
 		C->n = A->n;
 		bx = C->m;
-		by = A->m;
-		bz = C->n;
+		by = C->n;
+		bz = A->m;
 		break;
 	case TRANS:
 		temp = CUDA_MATRIX_TRANS;
@@ -161,7 +156,7 @@ EMATRIX* CUDA_MATRIX_CONVERT(EMATRIX* A, EMATRIX* B, const unsigned char FUN)
 		C->n = A->m;
 		bx = C->m;
 		by = C->n;
-		bz = 0;
+		bz = C->m * C->n;
 		break;
 	}
 	cudaMalloc(&CUDA_C, sizeof(float) * size_C);
