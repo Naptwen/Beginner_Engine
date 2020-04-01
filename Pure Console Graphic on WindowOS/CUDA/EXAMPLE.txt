@@ -7,19 +7,22 @@
 
 int main()
 {
-	elog;
-	_logtxt.Clearlog();
-	EMATRIX A(100, 100);
-	EMATRIX B(100, 1000);
-	A = ones();
-	for (int i = 0; i < 10000; i++)
-		B.vectors[i] = i;    
+	EMATRIX A(5, 5);
+	EMATRIX B(5, 5);
+	A.IDENTITY();
+	for (int i = 0; i < 25; i++)
+		B.vectors[i] = i;
 	clock_t t;
 	t = clock();
-	EMATRIX* C = CUDA_MATRIX_CONVERT(&A, &B, MULTI);
+	EMATRIX* C = CUDA_MATRIX_CONVERT(&A, NULL,1,3, CUT_COL);
+	EMATRIX* D = CUDA_MATRIX_CONVERT(&A, NULL, 1, 3, CUT_COL);
+	EMATRIX* G = CUDA_MATRIX_CONVERT(&A, NULL, 0, 0, TRANS);
+	EMATRIX* E = CUDA_MATRIX_CONVERT(&A, &B, 0, 0, MULTI);
+	EMATRIX* F = CUDA_MATRIX_CONVERT(&A, &B, 0, 0, ADD_COL);
+	EMATRIX* G = CUDA_MATRIX_CONVERT(&A, &B, 0, 0, ADD_ROW);
 	t = clock() - t;
 	double time_taken = ((double)t) / CLOCKS_PER_SEC;
-	cout <<"TIME = " + to_string(time_taken) + "\n";
+	cout << "TIME = " + to_string(time_taken) + "\n";
 	cout << "END" << endl;
 	return 0;
 }
