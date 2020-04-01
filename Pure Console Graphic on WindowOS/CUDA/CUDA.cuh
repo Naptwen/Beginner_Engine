@@ -77,7 +77,6 @@ void CUDA_MATRIX_TRANS(int mC, int nC, int  mnC, float* A, float* B, float* C)
 		int x = i / nC;
 		int y = i % nC;
 		C[y + x * nC] = A[x + y * mC];
-		printf("[%d,%d] <-> [%d,%d]\n", x, y, y, x);
 	}
 }
 
